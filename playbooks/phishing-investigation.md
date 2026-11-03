@@ -18,13 +18,9 @@ Document and Report
 Detection Improvement
 ```
 
----
-
 ## 1. Alert Triggered
 
 - Gateway or Defender Alert, or a user reported email
-
----
 
 ## 2. Triage: Is it real and how urgent is it?
 
@@ -34,8 +30,6 @@ A quick check to decide whether it's an obvious false positive and if not how ur
 - How many **Users are affected**
 
 **Obvious false positive** (newsletter, known sender) → release, report and close.
-
----
 
 ## 3. Investigation: Logs, Evidence, Scope
 
@@ -48,8 +42,6 @@ A quick check to decide whether it's an obvious false positive and if not how ur
 
 **Confirmed false positive** → release, report and close.
 
----
-
 ## 4. Containment
 
 Stop it spreading.
@@ -58,8 +50,6 @@ Stop it spreading.
 - If credentials were entered: **revoke sessions** and **reset the password**
 - If an attachment was opened: **isolate the device**
 
----
-
 ## 5. Remidiation
 
 Remove the threat and recover.
@@ -67,18 +57,13 @@ Remove the threat and recover.
 - Scan and clean affected devices, and restore access for the user
 - **Submit** the email to Microsoft and the gateway vendor
 
----
-
 ## 6. Document and Report
 
 - Timeline, analysis, IOCs, impact and actions taken
 - Tell the user what happened and what to look out for next time
-
----
 
 ## 7. Detection Improvement
 
 - Could a detection, a block rule or user training have stopped this sooner?
 - Tune noisy rules, and add new detections or block rules from what you learned
 
----
