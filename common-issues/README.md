@@ -8,20 +8,7 @@ Each fix includes the symptoms, the likely causes and the steps to resolve it, p
 
 1. [MFA Reset - Lost or New Phone](#mfa-reset---lost-or-new-phone)
 
-## 💡 Format
-
-# [Issue name]
-
-## Symptoms
-What the user sees or reports.
-
-## Common causes
-- Cause 1
-- Cause 2
-
-## Fix
-1. Step one
-2. Step two
+---
 
 ## 🔒 Security considerations
 What could go wrong, or be abused, when fixing this.
@@ -63,18 +50,7 @@ How to stop it happening again.
 
 ---
 
-# [Issue name]
 
-## Symptoms
-What the user sees or reports.
-
-## Common causes
-- Cause 1
-- Cause 2
-
-## Fix
-1. Step one
-2. Step two
 
 ## 🔒 Security considerations
 What could go wrong, or be abused, when fixing this.
