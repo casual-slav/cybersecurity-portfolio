@@ -7,6 +7,7 @@ Each fix includes the symptoms, the likely causes and the steps to resolve it, p
 ## ℹ️ Contents
 
 1. [MFA Reset - Lost or New Phone](#mfa-reset---lost-or-new-phone)
+2. [Self-Service Password Reset (SSPR)](#self-service-password-reset-sspr)
 
 ---
 
