@@ -10,18 +10,18 @@ Each fix includes the symptoms, the likely causes and the steps to resolve it, p
 
 ---
 
-# MFA Reset - Lost or New Phone
+## MFA Reset - Lost or New Phone
 
-## Symptoms
+### Symptoms
 - The user has a new or lost phone and can't approve MFA prompts or get codes
 - The user is stuck on "Approve sign-in request" or "Enter code" and can't get past it
 - Microsoft Authenticator was deleted or didn't carry over to a new phone
 
-## Common causes
+### Common causes
 - New phone, and Authenticator wasn't backed up or moved across
 - Lost, stolen or broken phone
 
-## Fix
+### Fix
 1. **Verify the user's identity** such as caller number (are they calling from office phone?), previous device, postcode, manager's name ect.
 2. **Check recent sign-ins** for the user in Entra ID. Look for failed MFA attempts or sign-ins from unusual IPs or locations
 3. In the **Entra admin centre**, go to **Users → [user] → Authentication methods**
@@ -41,11 +41,3 @@ Each fix includes the symptoms, the likely causes and the steps to resolve it, p
 - Document a clear **identity verification process** for MFA resets, and stick to it every time
 
 ---
-
-
-
-## 🔒 Security considerations
-What could go wrong, or be abused, when fixing this.
-
-## Prevention
-How to stop it happening again.
