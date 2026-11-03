@@ -1,0 +1,53 @@
+// Phishing Click-Through: users who clicked a link in a malicious email
+// MITRE ATT&CK:    T1566.002 Phishing: Spearphishing Link
+//                  T1204.001 User Execution: Malicious Link
+// Summary:      Finds Safe Links clicks on URLs from emails flagged as phishing or
+//               malware, at delivery, later by ZAP (zero-hour auto purge) or by
+//               manual remediation, plus clicks flagged at click time. Shows whether
+//               the user got through and whether they clicked before the email was removed.
+// Change the lookback as required
+let lookback = 7d;
+let PhishByVerdict = EmailEvents
+    | where Timestamp > ago(lookback)
+    | where ThreatTypes has_any ("Phish", "Malware")
+    | project NetworkMessageId, DetectedBy = "Delivery verdict", RemediatedAt = datetime(null);
+let PhishByRemediation = EmailPostDeliveryEvents
+    | where Timestamp > ago(lookback)
+    | where ActionType in ("Phish ZAP", "Malware ZAP", "Manual Remediation")
+    | project NetworkMessageId, DetectedBy = ActionType, RemediatedAt = Timestamp;
+let PhishMessages = union PhishByVerdict, PhishByRemediation
+    | summarize
+        DetectedBy   = strcat_array(make_set(DetectedBy), ", "),
+        RemediatedAt = min(RemediatedAt)
+        by NetworkMessageId;
+let EmailDetails = EmailEvents
+    | where Timestamp > ago(lookback)
+    | summarize
+        EmailReceived     = min(Timestamp),
+        Subject           = take_any(Subject),
+        SenderFromAddress = take_any(SenderFromAddress),
+        SenderIPv4        = take_any(SenderIPv4)
+        by NetworkMessageId;
+UrlClickEvents
+| where Timestamp > ago(lookback)
+| where Workload == "Email"
+| join kind=leftouter PhishMessages on NetworkMessageId
+| where isnotempty(DetectedBy) or ThreatTypes has_any ("Phish", "Malware")
+| join kind=leftouter EmailDetails on NetworkMessageId
+| extend
+    DetectedBy               = iff(isempty(DetectedBy), "Click-time verdict", DetectedBy),
+    UserGotThrough           = ActionType == "ClickAllowed" or IsClickedThrough == true,
+    ClickedBeforeRemediation = isnotnull(RemediatedAt) and Timestamp < RemediatedAt
+| extend
+    Severity     = iff(UserGotThrough, "High", "Low"),
+    SeverityRank = iff(UserGotThrough, 1, 2)
+| project
+    Timestamp, Severity, AccountUpn, Url,
+    ClickAction = ActionType,
+    IsClickedThrough, UserGotThrough, ClickedBeforeRemediation,
+    DetectedBy, RemediatedAt,
+    Subject, SenderFromAddress, SenderIPv4, EmailReceived,
+    ClickIP = IPAddress,
+    NetworkMessageId, ReportId, SeverityRank
+| order by SeverityRank asc, Timestamp desc
+| project-away SeverityRank

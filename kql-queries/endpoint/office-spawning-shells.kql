@@ -1,0 +1,38 @@
+// Office App Spawning a Shell or Script Host
+// MITRE ATT&CK:    T1204.002 User Execution: Malicious File
+//                  T1059 Command and Scripting Interpreter
+// Summary:      Flags Office apps launching shells, script hosts or LOLBins
+// Change the lookback, lists and exclusions as required
+let lookback = 7d;
+let officeApps = dynamic(["winword.exe", "excel.exe", "powerpnt.exe", "outlook.exe",
+    "msaccess.exe", "mspub.exe", "onenote.exe", "visio.exe"]);
+let suspiciousChildren = dynamic(["cmd.exe", "powershell.exe", "pwsh.exe", "wscript.exe",
+    "cscript.exe", "mshta.exe", "rundll32.exe", "regsvr32.exe", "certutil.exe",
+    "bitsadmin.exe", "msbuild.exe", "schtasks.exe", "wmic.exe", "curl.exe", "hh.exe"]);
+let scriptHosts = dynamic(["powershell.exe", "pwsh.exe", "wscript.exe", "cscript.exe", "mshta.exe"]);
+let suspiciousArgs = dynamic(["http", "-enc", "-encodedcommand", "frombase64string",
+    "downloadstring", "downloadfile", "invoke-webrequest", "iex", "invoke-expression",
+    "-w hidden", "-windowstyle hidden", "bypass", "-nop", "urlcache", "javascript:", "vbscript:"]);
+let knownBenign = dynamic(["example-trusted-addin.exe"]);   // replace after tuning
+DeviceProcessEvents
+| where Timestamp > ago(lookback)
+| where InitiatingProcessFileName in~ (officeApps)
+| where FileName in~ (suspiciousChildren)
+| where not(ProcessCommandLine has_any (knownBenign))
+| extend
+    HasSuspiciousArgs = ProcessCommandLine has_any (suspiciousArgs),
+    IsScriptHost      = FileName in~ (scriptHosts),
+    SourceDocument    = extract(@'(?i)([^\\"]+\.(docx|docm|doc|xlsx|xlsm|xlsb|xls|pptx|pptm|ppt|rtf|one))', 1, InitiatingProcessCommandLine)
+| extend
+    Severity     = case(HasSuspiciousArgs, "High", IsScriptHost, "Medium", "Low"),
+    SeverityRank = case(HasSuspiciousArgs, 1, IsScriptHost, 2, 3)
+| project
+    Timestamp, Severity, DeviceName, AccountName,
+    ParentProcess     = InitiatingProcessFileName,
+    SourceDocument,
+    ChildProcess      = FileName,
+    ProcessCommandLine,
+    ParentCommandLine = InitiatingProcessCommandLine,
+    HasSuspiciousArgs, SHA256, DeviceId, ReportId, SeverityRank
+| order by SeverityRank asc, Timestamp desc
+| project-away SeverityRank
