@@ -10,14 +10,6 @@ Each fix includes the symptoms, the likely causes and the steps to resolve it, p
 
 ---
 
-## 🔒 Security considerations
-What could go wrong, or be abused, when fixing this.
-
-## Prevention
-How to stop it happening again.
-
----
-
 # MFA Reset - Lost or New Phone
 
 ## Symptoms
