@@ -1,4 +1,4 @@
-# 🛠️ Common Issues & Fixes
+# 💡 Common Issues & Fixes
 
 A quick-reference knowledge base of IT issues I regularly resolve across Microsoft 365, Entra ID, Intune, email security and networking.
 
@@ -9,10 +9,11 @@ Each fix includes the symptoms, the likely causes and the steps to resolve it, p
 1. [MFA Reset - Lost or New Phone](#mfa-reset---lost-or-new-phone)
 2. [Self-Service Password Reset (SSPR)](#self-service-password-reset-sspr)
 3. [User Needs Admin Rights or Wants to Install Software](#user-needs-admin-rights-or-wants-to-install-software)
+4. [Device Non-Compliant in Intune](#device-non-compliant-in-intune)
 
 ---
 
-## MFA Reset - Lost or New Phone
+## 👉 MFA Reset - Lost or New Phone
 
 ### Symptoms
 - The user has a new or lost phone and can't approve MFA prompts or get codes
@@ -30,7 +31,7 @@ Each fix includes the symptoms, the likely causes and the steps to resolve it, p
 4. Select **Require re-register multifactor authentication**
 5. If the phone was **lost or stolen**, also select **Revoke sessions**, so anything still signed in on that device is logged out
 
-### 🔒 Security considerations
+### Security considerations
 - **MFA resets are a top social engineering target.** Attackers call or message the service desk pretending to be the user
 - **Verify identity through a trusted channel**, never just the channel the request came in on
   - Confirmation from their **line manager**
@@ -44,7 +45,7 @@ Each fix includes the symptoms, the likely causes and the steps to resolve it, p
 
 ---
 
-## Self-Service Password Reset (SSPR)
+## 👉 Self-Service Password Reset (SSPR)
 
 ### Symptoms
 - The user has forgotten their password or is locked out of their account
@@ -69,7 +70,7 @@ Each fix includes the symptoms, the likely causes and the steps to resolve it, p
 - The device can't update its cached credentials until it reaches a domain controller
 - Ask the user to sign in with the **old password** then connect to the office network when they can for the password to sync, and **lock and unlock** the device (or sign out and back in) so the new password is cached
 
-### 🔒 Security considerations
+### Security considerations
 - **SSPR is only as secure as the methods behind it.** If an attacker has registered their own MFA method on an account, they can reset the password themselves. Check for recently added methods if a reset looks suspicious
 - **Prefer strong methods:** such as Authenticator notifications
 - **Unexpected reset?** If a user gets a "your password was reset" email they didn't trigger, treat it as a possible account takeover
@@ -84,7 +85,7 @@ Each fix includes the symptoms, the likely causes and the steps to resolve it, p
 
 ---
 
-## User Needs Admin Rights or Wants to Install Software
+## 👉 User Needs Admin Rights or Wants to Install Software
 
 ### Symptoms
 - The user gets a **User Account Control (UAC)** prompt asking for an administrator username and password
@@ -108,7 +109,7 @@ Each fix includes the symptoms, the likely causes and the steps to resolve it, p
 3. **Deploy it through Intune:** use a packaging service such as **Robopack**, which provides pre-built, tested app packages that keep themselves updated
   - Assign it to the right group, and make it available in the Company Portal so others can install it too
 
-### 🔒 Security considerations
+### Security considerations
 - **Admin rights make malware far more dangerous.** With local admin, malware can turn off security tools, install persistence and steal credentials.
 - **Never sign in to a user's device with a domain admin or Global Admin account** to install something. Your credentials can be left behind in memory and stolen, use the device's LAPS account instead
 - **Check where the software came from:** use a reputable packaging service or the vendor's official site, check installers are digitally signed
@@ -118,3 +119,40 @@ Each fix includes the symptoms, the likely causes and the steps to resolve it, p
 - Have a clear **software request process** that users know about
 - Use a **packaging service with automatic updates** such as Robopack so deployed apps stay patched
 - Use **LAPS** on every device, so each local admin password is unique and rotated
+
+## 👉 Device Non-Compliant in Intune
+
+### Symptoms
+- The user can't open Outlook, Teams or SharePoint, and sees a message saying the device must meet the organisation's compliance policy
+- The sign-in log shows a **Conditional Access** failure, for example error **53000** (device not compliant)
+- The Company Portal and Intune shows the device as **Not compliant**
+
+### Common causes
+- **BitLocker** is off or suspended, often after a BIOS update or hardware change
+- **OS version** is below the minimum, or Windows updates are overdue
+- **Antivirus, firewall or real-time protection** is off, or isn't being reported to Windows Security
+- The device **hasn't checked in** with Intune recently
+- The device has a **risk score** from Defender for Endpoint
+- **Browser issue:** such as user not signed in on the browser
+
+### Fix
+1. **Find out what's non-compliant:** in Intune, go to the device and select **Device compliance**
+2. **Fix the non-compliant setting:**
+   - **BitLocker:** turn it on, or resume it if suspended, then **restart**. BitLocker status is confirmed after a reboot, so it can take a few hours to show as compliant
+   - **OS / updates:** install pending Windows updates and restart
+   - **Antivirus / firewall:** make sure protection is on and showing as healthy in **Windows Security**
+3. **Force a check-in:** Press **Sync** on the device in Intune. Then ask the user to select **Check status** on Company Portal
+4. **Check Entra ID:** under **Devices**, confirm the device now shows as **Compliant**, and that it's registered or joined properly
+5. **Browser problems:** use **Edge** signed in with the work profile
+6. **Device risk score:** Investigate the detection in Defender
+
+### Security considerations
+- **Compliance is what lets the device in.** Conditional Access trusts compliant devices, so fix the device
+- **Non-compliance can be a warning sign:** antivirus switched off, BitLocker suspended or a sudden risk score may mean tampering or malware
+- **Unexpected BitLocker recovery or suspension** after a hardware change can also be a sign of physical tampering
+- **Personal or unmanaged devices** shouldn't be made compliant just to get access. Use browser-only access or app protection policies instead
+
+### Prevention
+- Set **actions for non-compliance** in Intune, such as emailing the user, with a short grace period before access is blocked
+- Use **Windows Update rings** so devices stay on a supported OS version
+- Review the **compliance report** regularly and schedule email notifications to users when non-compliant
