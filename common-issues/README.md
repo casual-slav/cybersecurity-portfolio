@@ -6,10 +6,10 @@ Each fix includes the symptoms, the likely causes and the steps to resolve it, p
 
 ## ℹ️ Contents
 
-1. [MFA Reset - Lost or New Phone](#mfa-reset---lost-or-new-phone)
-2. [Self-Service Password Reset (SSPR)](#self-service-password-reset-sspr)
-3. [User Needs Admin Rights or Wants to Install Software](#user-needs-admin-rights-or-wants-to-install-software)
-4. [Device Non-Compliant in Intune](#device-non-compliant-in-intune)
+1. [MFA Reset - Lost or New Phone](#-mfa-reset---lost-or-new-phone)
+2. [Self-Service Password Reset (SSPR)](#-self-service-password-reset-sspr)
+3. [User Needs Admin Rights or Wants to Install Software](#-user-needs-admin-rights-or-wants-to-install-software)
+4. [Device Non-Compliant in Intune](#-device-non-compliant-in-intune)
 
 ---
 
