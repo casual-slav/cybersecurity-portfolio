@@ -1,0 +1,63 @@
+// Impossible Travel: country jump from an unmanaged device
+// MITRE ATT&CK:    T1078.004 Valid Accounts: Cloud Accounts
+// Summary:      Flags successful sign-ins for the same user from two different countries
+//               within a short window from devices that are neither managed nor compliant.
+// Change the lookback and window as required
+let lookback = 1d;
+let window   = 1h;
+let UnmanagedSignins = SigninLogs
+    | where TimeGenerated > ago(lookback)
+    | where ResultType == 0
+    | where tostring(DeviceDetail.isManaged) != "true"
+        and tostring(DeviceDetail.isCompliant) != "true"
+    | extend
+        Country = tostring(LocationDetails.countryOrRegion),
+        City    = tostring(LocationDetails.city),
+        Lat     = toreal(LocationDetails.geoCoordinates.latitude),
+        Lon     = toreal(LocationDetails.geoCoordinates.longitude)
+    | where isnotempty(Country)
+    | project
+        TimeGenerated, UserPrincipalName, UserId, IPAddress, AppDisplayName,
+        Country, City, Lat, Lon,
+        DeviceOS      = tostring(DeviceDetail.operatingSystem),
+        DeviceBrowser = tostring(DeviceDetail.browser);
+UnmanagedSignins
+| join kind=inner (
+    UnmanagedSignins
+    | project
+        UserPrincipalName,
+        TimeGenerated2  = TimeGenerated,
+        IPAddress2      = IPAddress,
+        AppDisplayName2 = AppDisplayName,
+        Country2        = Country,
+        City2           = City,
+        Lat2            = Lat,
+        Lon2            = Lon
+) on UserPrincipalName
+| where TimeGenerated2 > TimeGenerated and TimeGenerated2 - TimeGenerated <= window
+| where Country != Country2 and IPAddress != IPAddress2
+| extend
+    MinutesBetween = datetime_diff("minute", TimeGenerated2, TimeGenerated),
+    DistanceKm     = round(geo_distance_2points(Lon, Lat, Lon2, Lat2) / 1000, 0)
+| extend
+    SpeedKmh  = round(DistanceKm / (max_of(MinutesBetween, 1) / 60.0), 0),
+    Name      = tostring(split(UserPrincipalName, "@")[0]),
+    UPNSuffix = tostring(split(UserPrincipalName, "@")[1])
+| project
+    FirstSignIn  = TimeGenerated,
+    SecondSignIn = TimeGenerated2,
+    MinutesBetween,
+    UserPrincipalName, UserId, Name, UPNSuffix,
+    FromIP       = IPAddress,
+    FromCity     = City,
+    FromCountry  = Country,
+    FromApp      = AppDisplayName,
+    ToIP         = IPAddress2,
+    ToCity       = City2,
+    ToCountry    = Country2,
+    ToApp        = AppDisplayName2,
+    DistanceKm,
+    SpeedKmh,
+    DeviceOS,
+    DeviceBrowser
+| order by SpeedKmh desc
