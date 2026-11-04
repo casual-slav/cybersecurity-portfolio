@@ -8,6 +8,7 @@ Each fix includes the symptoms, the likely causes and the steps to resolve it, p
 
 1. [MFA Reset - Lost or New Phone](#mfa-reset---lost-or-new-phone)
 2. [Self-Service Password Reset (SSPR)](#self-service-password-reset-sspr)
+3. [User Needs Admin Rights or Wants to Install Software](#user-needs-admin-rights-or-wants-to-install-software)
 
 ---
 
@@ -80,3 +81,40 @@ Each fix includes the symptoms, the likely causes and the steps to resolve it, p
 - Encourage **at least two methods** per user
 - **Notify users** whenever their password is reset, so unexpected resets get reported quickly
 - Make sure users know the **SSPR link**, so they don't call the service desk, or fall for fake "reset your password" phishing pages
+
+---
+
+## User Needs Admin Rights or Wants to Install Software
+
+### Symptoms
+- The user gets a **User Account Control (UAC)** prompt asking for an administrator username and password
+- An installer fails with "you need administrator permission" or "access denied"
+- The user asks for admin rights "just to install one thing" or to run a specific app
+- A printer driver, plugin or update won't install until elevated
+
+### Common causes
+- The app isn't available in the **Company Portal**
+- The software needs elevation to install
+- A one-off install, such as a driver or a vendor tool for a specific piece of hardware
+
+### Fix
+**One-off install** (like a driver): Remote in and elevate using the device's **LAPS** password, retrieved from Intune or Entra ID
+  - Enter it yourself, **never give it to the user**
+1. **Check the Company Portal first:** if the app is already approved, the user can install it themselves from Intune without admin rights
+2. **New software? Raise a request:** new software goes through the **demand / request process**
+  - The user submits a request with the **business reason**
+  - The request is **reviewed and triaged**
+  - IT reviews the software, if applicable it goes through the Change Authority Board (CAB)
+3. **Deploy it through Intune:** use a packaging service such as **Robopack**, which provides pre-built, tested app packages that keep themselves updated
+  - Assign it to the right group, and make it available in the Company Portal so others can install it too
+
+### 🔒 Security considerations
+- **Admin rights make malware far more dangerous.** With local admin, malware can turn off security tools, install persistence and steal credentials.
+- **Never sign in to a user's device with a domain admin or Global Admin account** to install something. Your credentials can be left behind in memory and stolen, use the device's LAPS account instead
+- **Check where the software came from:** use a reputable packaging service or the vendor's official site, check installers are digitally signed
+
+### Prevention
+- Keep the **Company Portal up-to-date** with commonly requested apps
+- Have a clear **software request process** that users know about
+- Use a **packaging service with automatic updates** such as Robopack so deployed apps stay patched
+- Use **LAPS** on every device, so each local admin password is unique and rotated
